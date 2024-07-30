@@ -1,7 +1,13 @@
 Replace ad-hoc regex-based XML processing with proper XML processing;
 see NOTES for details
 
-Make sure proper transactions are in place for everything.
+Make sure proper transactions are in place for everything. -- SHOULD BE DONE NOW
+
+Consolidate multiple prompt steps into a single query, increasing API
+performance at lower cost -- check for feasibility.
+
+Make bulk re-annotation use the OpenAPI bulk query interface, further
+increasing performance and lowering cost.
 
 Consolidate category, collection and file display scripts into a single script.
 
@@ -16,7 +22,8 @@ Possibly also support for HTML files, and OpenDoc/DOCX formats?
 
 Possibly support for Excel / CSV import?
 
-Multi-file import.
+Multi-file import, allowing collections of documents to be uploaded at
+once from the browser select window.
 
 Import of archive file formats: tar, zip etc.
 
