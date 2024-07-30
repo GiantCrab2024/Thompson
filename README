@@ -1,0 +1,25 @@
+This is a *prototype-quality* proof of concept for the Thompson museum
+record annotation system, written by Neil Harris and commissioned for
+Bexhill Museum by Rohan Jayasekera.
+
+The code is MIT-licensed; see LICENSE for full license.
+
+The system consists of:
+
+* An Nginx web server setup
+* A PostgreSQL database setup
+* A systemd service definition
+* A set of HTML, CSS and image files that define a web front end.
+* A set of CGI-bin Python programs that communicate with the database.
+* A Python daemon program that runs under systemd to perform background tasks,
+* Documentation
+
+For notes on individual files, see NOTES.
+
+To find known bugs, temporary code and pending improvements, see NOTES and TODO, and run
+
+grep -E "BUG|FIXME|TODO|HACK" *.py
+
+To find files which hit the database, run
+
+grep -El 'SET|UPDATE|SELECT|WHERE|DELETE' *.py

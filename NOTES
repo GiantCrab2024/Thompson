@@ -1,0 +1,189 @@
+Prototype-grade code
+--------------------
+
+This entire project is currently a prototype, and is written
+accordingly, with speed of development as the prime objective. There
+is little error handling other than throwing exceptions.
+
+To take this code to production quality will require substantial code
+review and the addition of proper error handling.
+
+Notes on XML
+------------
+
+This code is prototyping code, and uses regular expressions to parse
+XML, not a proper XML processar. While this is sufficient for
+prototyping, for production work XML should be processed with a fully
+conformant XML processor like defusedxml that protects against attacks
+that use obscure XML features: see
+https://docs.python.org/3/library/xml.html#defusedxml-package
+
+annonation_daemon.py
+--------------------
+
+This repeatedly searches the database for records that need annotation
+(either because there is none, or because it is out of date), and
+sends them to OpenAI's LLM API for annotation. The details of the
+annotation can be changed by altering the prompts. The annotations are
+then written back to the database.
+
+display_entities2.py
+--------------------
+
+This is the main display interface for the system.
+
+manage_entries2.py
+------------------
+
+Sundry database management functions. Has "safety catch" code to make
+it more difficult to perform mass database deletions by mistake.
+
+get_db_status2.py
+-----------------
+
+Displays the status of the system. Currently database statistics only,
+but intended to later be extended display other system states and
+statistics.
+
+display_categories2.py
+display_collections2,py
+display_filenames2.py
+-----------------------
+
+These three programs could be unified into a single program. Care
+would need to be taken to avoid SQL injection.
+
+ingest_xmlfile2.py
+------------------
+
+Ingests an XML file and loads the <Object>s within it into the
+database. The caveats about XML above should be noted.
+
+ingest_textfile2.py
+-------------------
+
+Ingests a text file, XML-escaping it embedding it within an XML
+document. This is then ingested in the same was as the XML file
+importer. Has provision for adding XML entity-value fields within
+it.
+
+extract_file.py
+---------------
+
+Dumps the entire database out as a single XML file. Should probably be
+extended to allow partial dumps of only parts of the database.
+
+xml_prettyprint.py
+------------------
+
+This reads an XML file and outputs it in an idented form. It is a quick hack
+for visualization only, and should not be used in real XML processing.
+
+rewrite_pages.py
+----------------
+
+Since there is no HTML templating system, this transfers changes in
+the overall boilerplate from index.html to the other HTML interface
+pages.
+
+html_utils.py
+-------------
+
+Common HTML-generation code.
+
+pp_test.py
+xml_prettyprint.py
+dataset.py
+------------------
+
+Test/throwaway programs.
+
+deploy.sh
+---------
+
+Copies code, HTML files, and configuration files to the release
+system. Reloads the webserver and restarts the annotation service to
+make these changes effective.
+
+Run with sudo.
+
+export_xml.html
+index.html
+index2.html
+ingest_textfile.html
+ingest_xmlfile.html
+manage.html
+help.html
+style.css
+-------------------
+
+User interface pages. Note that index2.html is there solely for
+backward compatibility, and should eventually be removed.
+
+'Museum_Logo_new_square - thumb.png'
+magnify.svg
+-----------------------------------
+
+Graphics for user interface.
+
+conf/siliconprom.com
+--------------------
+
+Nginx configuration file for site.
+
+postgres_museum_database.schema
+-------------------------------
+
+PostgreSQL schema for creating the database. Generated using
+
+pg_dump --schema-only -d museum
+
+The overall postgres installation is owned by user postgres; the
+museum database is owned by user posgres with users debian and
+www-data having appropriate permissions on it. No passwords, only UNIX
+socket authentication.
+
+database_annotator.service
+--------------------------
+
+Systemd configuration file for the database annotator service. Will
+shut down the service if there are too many failures in a short period
+of time, to prevent runaway queries to the OpenAI API.
+
+/var/www/siliconprom/dotenv/.env
+--------------------------------
+
+System secrets: currently just the OpenAI key. The Nginx configuration
+files should be configured such that this should not be publicly
+visible. The location of this file may move in future.
+
+/var/www/siliconprom/.htpasswd
+------------------------------
+
+Hashed Basic Auth passwords for the site. 
+
+/var/www/siliconprom/html/
+/var/www/siliconprom/cgi-bin/
+/var/www/siliconprom/daemon
+---------------------------------
+
+Home for live website content, CGI scripts and annotation daemon
+respectively.
+
+Overall notes
+-------------
+
+All of these programs are prototype-quality. In particular, XML processing is 
+done using ad-hoc parsing rather than using a rigorously correct XML parser. 
+
+The entire system is designed to use UTF-8 encoding throughout;
+perhaps free-text documents should be probed for charset if not
+indicated?
+
+An outstanding issue is charset detection, which can lead to mojibake
+if not performed correctly. The use of a rigorous XML parser will sort
+this. Note the use of charset directives in HTML to enforce this.
+
+It's interesting that the LLM will happily interpret XML entities on
+input and generate UTF-8 output: hence potential mojibake issues! A
+proper XML parser will fix this.

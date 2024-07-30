@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thompson</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="top-menu">
+        <div class="logo"><a href="/index2.html">Thompson</a></div>
+	<div class="search-container">
+	  <form action="/cgi/display_entries2.py" method="GET" class="search-form">
+            <input type="text" name="filter" class="search-input" placeholder="Search...">
+            <button type="submit" class="search-button">
+              <img src="/magnify.svg" alt="Search">
+            </button>
+	  </form>
+	</div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/cgi/display_entries2.py">Browse</a></li>
+                <li><a href="/ingest_xmlfile.html">Ingest XML</a></li>
+                <li><a href="/ingest_textfile.html">Ingest Plaintext</a></li>
+                <li><a href="/export_xml.html">Export XML</a></li>
+                <li><a href="/cgi/display_categories2.py">Categories</a></li>
+                <li><a href="/cgi/display_collections2.py">Collections</a></li>
+                <li><a href="/cgi/display_filenames2.py">Files</a></li>
+                <li><a href="/manage.html">Manage</a></li>
+                <li><a href="/cgi/get_db_status2.py">Status</a></li>
+                <li><a href="/help.html">Help</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <!-- BEGIN CONTENT -->
+            <h1>Manage database</h1>
+
+<div class="scrollable-content">
+<h2>Manage database entries</h2>
+
+<form action="/cgi/manage_entries2.py" method="POST" accept-charset="UTF-8">
+  <div>
+  <input type="checkbox" name="delete_annotations" value="y">
+  <label for="delete_annotations">Delete annotations</label>
+  </div>
+  <div>
+  <input type="checkbox" name="touch" value="y">
+  <label for="touch">Mark for refresh</label>
+  </div>
+  <div>
+  <input type="checkbox" name="delete_original" value="y">
+  <label for="delete_everything">Delete original</label>
+  </div>
+  <div>
+    <label for="filter">Filter</label>
+    <input type="text" name="filter" value="">
+  </div>
+  <div>
+  <input type="checkbox" name="confirmed" value="y">
+  <label for="confirmed">Yes, I'm sure</label>
+  </div>
+  <div>
+  <input type="submit" value="Modify or delete entries">
+  </div>
+</form>
+<br><br>
+<h2>Delete everything, wiping the database clean</h2>
+
+<form action="/cgi/manage_entries2.py" method="POST" accept-charset="UTF-8" class="warnbox">
+  <div class="nodisplay">
+    <input type="checkbox" name="delete_original" value="y" checked>
+    <label for="delete_everything">Delete original</label>
+  </div>
+  <div class="nodisplay">
+    <label for="filter">Filter</label>
+    <input type="text" name="filter" value="ENTIRE DATABASE">
+  </div>
+  <div>
+    <input type="checkbox" name="confirmed" value="y">
+    <label for="confirmed" class="whitebg">Yes, I'm sure, delete everything in the database</label>
+  </div>
+  <div>
+    <input  type="submit" value="DELETE ALL DATABASE ENTRIES">
+  </div>
+</form>
+</div>
+            <!-- END CONTENT -->
+        </div>
+    </div>
+</body>
+</html>

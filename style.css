@@ -1,0 +1,206 @@
+/* style.css */
+body {
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #fafafa;
+    color: #333;
+    font-size: 18px;
+    line-height: 1.6;
+    overflow: hidden; /* Prevent body from scrolling */
+}
+
+.nodisplay {
+    display: none;
+}
+
+input[type=button], input[type=submit], input[type=reset] {
+  background-color: #eee;
+  border: none;
+  color: black;
+  padding: 16px 32px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-color: black;
+  border-width: 1px;
+  border-radius: 8px;
+  border-style: solid;
+}
+
+.warnbox {
+    box-sizing: border-box;
+    padding: 10px;
+    display: inline-block;
+    border-color: red;
+    border-width: 2px;
+    border-style: solid;
+  background-image: linear-gradient(-45deg, #f00 25%, transparent 25%, transparent 50%, #f00 50%, #f00 75%, transparent 75%, #fff);
+  background-size: 50px 50px;
+}
+
+.whitebg {
+    background-color: #fff;
+}
+
+textarea {
+    width: 97%;
+    font-family: Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Tahoma, sans-serif; 
+    font-size: 14px; 
+    font-style: normal; 
+    font-variant: normal; 
+    font-weight: 400; 
+    line-height: 1.6; 
+}
+
+.top-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background-color: #ffffff;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.top-menu .logo {
+    margin-left: 20px;
+    font-size: 26px;
+    font-weight: 600;
+    width: 220px;
+}
+
+table {
+  border-spacing: 10px 0;
+    margin-left: -10px; /* remove outer border spacing */
+    margin-right: -10px; /* remove outer border spacing */
+}
+
+.right-align {
+    text-align: right;
+}
+
+/* don't want the logo to look like a link */
+.top-menu .logo a {
+    color: #000;
+    text-decoration:none;
+}
+
+.top-menu .search-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.search-form {
+    display: flex;
+    flex: 1;
+}
+
+.search-input {
+    width: calc(100% - 60px); /* Adjust to fit within the available space */
+    padding: 10px;
+    font-size: 18px;
+    border: 1px solid #777;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+    flex: 1;
+}
+
+.search-input:focus {
+    border-color: #777;
+}
+
+.search-button {
+    height: 100%;
+    background-color: #fafafa;
+    border: 1px solid #777;
+    border-left: none;
+    padding: 11px;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-button img {
+    width: 20px;
+    height: 20px;
+}
+
+.search-button:hover {
+    border-color: #777;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    margin-top: 70px; /* height of top-menu */
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: #ffffff;
+    border-right: 1px solid #eee;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 12px;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 8px;
+    background-color: #fafafa;
+    border-radius: 4px;
+}
+
+.sidebar ul li a:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+.content {
+    flex: 1;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-left: 1px solid #eee;
+    height: calc(100vh - 142px); /* Full height minus top menu + navbar height */
+}
+
+.scrollable-content {
+    height: 100%;
+    overflow-y: auto; /* Allow vertical scrollbar */
+}
+
+.browse-navbar {
+    height: 72px;
+}
+
+.content h1 {
+    margin: 0;
+    padding: 0;
+    padding-top: 0.5em; 
+}

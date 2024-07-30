@@ -1,0 +1,30 @@
+Replace ad-hoc regex-based XML processing with proper XML processing;
+see NOTES for details
+
+Make sure proper transactions are in place for everything.
+
+Consolidate category, collection and file display scripts into a single script.
+
+Consider displaying entries without annotations. Make filterable?
+
+Consolidate XML and plaintext file upload. Simple to auto-detect valid
+XML vs. everything else.
+
+Autodetection of charsets for unlabeled plain text files?
+
+Possibly also support for HTML files, and OpenDoc/DOCX formats?
+
+Possibly support for Excel / CSV import?
+
+Multi-file import.
+
+Import of archive file formats: tar, zip etc.
+
+Add filtering to XML output.
+
+Possibly also CSV output?
+
+Perhaps unify search filtering with management and XML output.
+
+'search.py' is a better name than 'display_entities.py'
+

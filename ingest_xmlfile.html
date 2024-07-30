@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thompson</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="top-menu">
+        <div class="logo"><a href="/index2.html">Thompson</a></div>
+	<div class="search-container">
+	  <form action="/cgi/display_entries2.py" method="GET" class="search-form">
+            <input type="text" name="filter" class="search-input" placeholder="Search...">
+            <button type="submit" class="search-button">
+              <img src="/magnify.svg" alt="Search">
+            </button>
+	  </form>
+	</div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/cgi/display_entries2.py">Browse</a></li>
+                <li><a href="/ingest_xmlfile.html">Ingest XML</a></li>
+                <li><a href="/ingest_textfile.html">Ingest Plaintext</a></li>
+                <li><a href="/export_xml.html">Export XML</a></li>
+                <li><a href="/cgi/display_categories2.py">Categories</a></li>
+                <li><a href="/cgi/display_collections2.py">Collections</a></li>
+                <li><a href="/cgi/display_filenames2.py">Files</a></li>
+                <li><a href="/manage.html">Manage</a></li>
+                <li><a href="/cgi/get_db_status2.py">Status</a></li>
+                <li><a href="/help.html">Help</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <!-- BEGIN CONTENT -->
+<div class="scrollable-content">
+<h1>Ingest XML file</h1>
+Input XML file for ingest here, now checks for newness.
+<form action="/cgi/ingest_xmlfile2.py" method="POST" accept-charset="UTF-8" enctype="multipart/form-data">
+  <input type="file" id="file" name="filename">
+  <br>
+  <input type="submit" value="Upload XML file">
+</form>
+</div>
+            <!-- END CONTENT -->
+        </div>
+    </div>
+</body>
+</html>

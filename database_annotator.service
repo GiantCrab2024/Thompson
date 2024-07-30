@@ -1,0 +1,15 @@
+[Unit]
+Description=Museum database annotator service
+After=network.target
+StartLimitIntervalSec=600
+StartLimitBurst=40
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=www-data
+ExecStart=/usr/bin/env python3 /var/www/siliconprom/daemon/annotation_daemon.py
+
+[Install]
+WantedBy=multi-user.target
