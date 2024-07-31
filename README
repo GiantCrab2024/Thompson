@@ -6,7 +6,8 @@ The code is MIT-licensed; see LICENSE for full license.
 
 The system consists of:
 
-* An Nginx web server setup
+* An Nginx web server setup with FastCGI wrapper and Basic Auth authentication
+* Let's Encrypt TLS certificate + HTTPS setup
 * A PostgreSQL database setup
 * A systemd service definition
 * A set of HTML, CSS and image files that define a web front end.
