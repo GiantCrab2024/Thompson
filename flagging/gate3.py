@@ -122,6 +122,12 @@ Labels:
 - UNGROUNDED: no traceable basis in the fields or passages above. A claim that is true from general knowledge but absent from the evidence is UNGROUNDED.
 If you are unsure between INFERRED and UNGROUNDED, choose UNGROUNDED.
 
+How the record fields are written (Modes conventions):
+- Dates are day.month.year with no leading zeros: "5.4.1935" is 5 April 1935, "4.1935" is April 1935.
+- A qualifier such as "about", "circa", "before" or "after" is often recorded in a Note field under the date. A claim that states the date without that qualifier is UNGROUNDED.
+- Names may be recorded surname first: "Smith, John" is John Smith.
+- A label in brackets in a field path, such as "Date (creation date)", says what kind of value the field holds.
+
 For GROUNDED and INFERRED, give the basis: either the field path exactly as written above, or the source ID followed by a short verbatim quote, e.g. S03: "opened in December 1935". For UNGROUNDED, give an empty basis.
 
 Reply with JSON only, one entry per claim, in this form:

@@ -82,7 +82,7 @@ class SchemaHandling(unittest.TestCase):
         text = rec.as_prompt_text()
         for hidden in ("private seller", "purchase", "Insured value", "B4"):
             self.assertNotIn(hidden, text)
-        self.assertEqual(rec.withheld, ["Object/Acquisition"])
+        self.assertEqual(rec.withheld, ["Object/Acquisition (confidentiality=confidential)"])
         self.assertTrue(any("withheld" in n for n in score_record(rec).notes))
 
     def test_nested_object_not_a_record_or_parent_field(self):
@@ -91,7 +91,7 @@ class SchemaHandling(unittest.TestCase):
 
     def test_whole_record_confidential(self):
         rec = self.records["TEST:0010"]
-        self.assertEqual((rec.fields, rec.withheld), ([], ["Object"]))
+        self.assertEqual((rec.fields, rec.withheld), ([], ["Object (confidentiality=restricted)"]))
 
     def test_latin1_and_namespaces(self):
         data = ('<?xml version="1.0" encoding="iso-8859-1"?>'
@@ -102,6 +102,39 @@ class SchemaHandling(unittest.TestCase):
         [rec] = parse_modes_xml(data)
         self.assertEqual(rec.number, "N1")
         self.assertIn(("Object/Production/Person/PersonName", "Ren\u00e9e Caf\u00e9"), rec.fields)
+
+    def test_elementtype_and_aspect_labels(self):
+        data = ('<Object><ObjectIdentity><Number>E1</Number></ObjectIdentity>'
+                '<Production><Date elementtype="creation date"><DateBegin>4.1935</DateBegin></Date>'
+                '<Person><PersonName>A maker</PersonName><Dates>1890-1960</Dates></Person></Production>'
+                '<Description><Aspect><Type>photo format</Type><Reading>35 mm</Reading></Aspect>'
+                '<Aspect><Type>colour</Type><Keyword>blue</Keyword></Aspect></Description>'
+                '</Object>').encode()
+        [rec] = parse_modes_xml(data)
+        f = dict(rec.fields)
+        self.assertEqual(f["Object/Production/Date (creation date)/DateBegin"], "4.1935")
+        self.assertEqual(f["Object/Description/Aspect (photo format)/Reading"], "35 mm")
+        r = score_record(rec)
+        self.assertTrue(r.elements["date"])
+        self.assertTrue(r.elements["materials"])   # via the photo format Aspect
+
+    def test_maker_life_dates_are_not_a_production_date(self):
+        rec = Record("L", [("Object/Production/Person/PersonName", "A maker"),
+                           ("Object/Production/Person/Dates", "1890-1960")])
+        self.assertFalse(score_record(rec).elements["date"])
+
+    def test_colour_aspect_is_not_format(self):
+        rec = Record("C", [("Object/Description/Aspect (colour)/Keyword", "blue")])
+        self.assertFalse(score_record(rec).elements["materials"])
+
+    def test_non_current_content_withheld(self):
+        data = ('<Object><ObjectIdentity><Number>K1</Number></ObjectIdentity>'
+                '<Identification><ObjectName><Keyword currency="obsolete">an outdated term</Keyword>'
+                '<Keyword currency="current">figure</Keyword></ObjectName></Identification></Object>').encode()
+        [rec] = parse_modes_xml(data)
+        self.assertNotIn("outdated", rec.as_prompt_text())
+        self.assertIn("figure", rec.as_prompt_text())
+        self.assertEqual(rec.withheld, ["Object/Identification/ObjectName/Keyword (currency=obsolete)"])
 
     def test_qualifiers_alone_are_not_values(self):
         rec = Record("Q", [("Object/Production/Person/Role", "maker"),

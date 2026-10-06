@@ -61,6 +61,7 @@ class TwoCalls(unittest.TestCase):
         self.assertNotIn("GENERATED TEXT", user_b)
         self.assertIn("[S03] " + PASSAGES[0].text, user_b)
         self.assertIn("Object/Production/Date/DateBegin: 1936", user_b)
+        self.assertIn("day.month.year", user_b)
 
     def test_result(self):
         self.assertEqual(self.res.claim_count, 3)
