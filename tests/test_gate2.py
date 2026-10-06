@@ -1,0 +1,96 @@
+import os
+import tempfile
+import unittest
+
+from flagging.gate2 import STUB_TEXT, is_placeholder, score_from_count, score_record, should_generate
+from flagging.modes import Record, load_export, parse_modes_csv
+
+FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "synthetic_modes_export.xml")
+
+
+def by_number():
+    return {r.number: r for r in load_export(FIXTURE)}
+
+
+class ScoreBands(unittest.TestCase):
+    def test_paper_fallback_bands(self):
+        self.assertEqual([score_from_count(n) for n in range(6)], [0, 0, 1, 2, 2, 3])
+
+
+class SyntheticExport(unittest.TestCase):
+    # (Detail Score, decision, elements present) expected for each fixture record.
+    EXPECTED = {
+        "TEST:0001": (3, "Go", 5),
+        "TEST:0002": (2, "Go", 3),   # maker is "unknown"; Role alone doesn't count
+        "TEST:0003": (1, "Stop", 2),  # description is a bare label
+        "TEST:0004": (0, "Stop", 1),  # placeholders everywhere
+        "TEST:0005": (2, "Go", 4),   # "De La Warr Road" noise record; maker "not known"
+        "TEST:0006": (2, "Go", 3),   # description is 13 words, under the 15-word bar
+    }
+
+    def test_all_records_parsed(self):
+        self.assertEqual(sorted(by_number()), sorted(self.EXPECTED))
+
+    def test_scores(self):
+        records = by_number()
+        for number, (score, decision, count) in self.EXPECTED.items():
+            with self.subTest(number):
+                r = score_record(records[number])
+                self.assertEqual((r.detail_score, r.decision, r.element_count), (score, decision, count), r.elements)
+
+    def test_stub_and_caveat(self):
+        records = by_number()
+        self.assertEqual(score_record(records["TEST:0004"]).stub, STUB_TEXT)
+        self.assertEqual(score_record(records["TEST:0001"]).stub, "")
+        self.assertTrue(score_record(records["TEST:0002"]).caveat)
+        self.assertEqual(score_record(records["TEST:0001"]).caveat, "")
+
+    def test_spec_checks_are_notes_only(self):
+        records = by_number()
+        notes3 = score_record(records["TEST:0003"]).notes
+        self.assertTrue(any("bare label" in n for n in notes3))
+        self.assertTrue(any("no marks" in n for n in notes3))
+        self.assertFalse(any("no marks" in n for n in score_record(records["TEST:0001"]).notes))
+
+    def test_run_a_never_stops(self):
+        r = score_record(by_number()["TEST:0004"])
+        self.assertTrue(should_generate(r, "A"))
+        self.assertFalse(should_generate(r, "B"))
+
+
+class DescriptionLength(unittest.TestCase):
+    def record(self, words):
+        desc = " ".join("word%d" % i for i in range(words))
+        return Record("X", [("Object/Identification/BriefDescription", desc)])
+
+    def test_fifteen_word_boundary(self):
+        self.assertFalse(score_record(self.record(14)).elements["description"])
+        self.assertTrue(score_record(self.record(15)).elements["description"])
+
+
+class Placeholders(unittest.TestCase):
+    def test_placeholders(self):
+        for v in ["?", "Unknown", "unknown.", " ?? ", "N/A", "-", "(not known)"]:
+            self.assertTrue(is_placeholder(v), v)
+        for v in ["c. 1935?", "1930s", "Unknown maker's mark on base"]:
+            self.assertFalse(is_placeholder(v), v)
+
+
+class CsvExport(unittest.TestCase):
+    def test_csv_columns_map_to_elements(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8") as f:
+            f.write("ObjectNumber,BriefDescription,DateMade,Maker,Material,Acquisition\n")
+            f.write("C1,%s,1935,Unknown,paper,gift\n" % " ".join(["w"] * 16))
+        try:
+            [rec] = parse_modes_csv(f.name)
+        finally:
+            os.unlink(f.name)
+        r = score_record(rec)
+        self.assertEqual(rec.number, "C1")
+        self.assertEqual(r.elements, {"description": True, "date": True, "maker": False,
+                                      "materials": True, "acquisition": True})
+        self.assertEqual(r.detail_score, 2)
+
+
+if __name__ == "__main__":
+    unittest.main()

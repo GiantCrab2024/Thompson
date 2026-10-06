@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC test data in a MODES-style layout. These are not Bexhill Museum
+     records. Replace with the real DLWP export once available, and check the
+     tag names in flagging/modes.py ELEMENT_RULES against it. -->
+<Interchange>
+  <Object>
+    <ObjectIdentity><Number>TEST:0001</Number></ObjectIdentity>
+    <Identification>
+      <ObjectName><Keyword>photograph</Keyword></ObjectName>
+      <BriefDescription>Black and white photograph of the south staircase of the De La Warr Pavilion, taken from the terrace, showing the curved glass stair tower and the cantilevered landing.</BriefDescription>
+    </Identification>
+    <Production>
+      <Person><PersonName>A. N. Photographer</PersonName><Role>photographer</Role></Person>
+      <Date><DateBegin>1936</DateBegin></Date>
+    </Production>
+    <Description>
+      <Material><Keyword>gelatin silver print</Keyword></Material>
+      <Inscription><Text>"DLWP south stair 1936" in pencil on reverse</Text></Inscription>
+    </Description>
+    <Acquisition><Method>gift</Method><Note>Donated by a local resident in 1988 with a group of Pavilion photographs.</Note></Acquisition>
+  </Object>
+
+  <Object>
+    <ObjectIdentity><Number>TEST:0002</Number></ObjectIdentity>
+    <Identification>
+      <BriefDescription>Printed programme for a dance held in the De La Warr Pavilion ballroom, with a list of the evening's dances and the name of the band.</BriefDescription>
+    </Identification>
+    <Production>
+      <Person><PersonName>unknown</PersonName><Role>printer</Role></Person>
+      <Date><Period>1930s</Period></Date>
+    </Production>
+    <Description><Material><Keyword>card</Keyword></Material></Description>
+  </Object>
+
+  <Object>
+    <ObjectIdentity><Number>TEST:0003</Number></ObjectIdentity>
+    <Identification><BriefDescription>Postcard</BriefDescription></Identification>
+    <Production><Date><DateBegin>c. 1950</DateBegin></Date></Production>
+    <Description><Material><Keyword>card</Keyword></Material></Description>
+  </Object>
+
+  <Object>
+    <ObjectIdentity><Number>TEST:0004</Number></ObjectIdentity>
+    <Identification><BriefDescription>?</BriefDescription></Identification>
+    <Production>
+      <Person><PersonName>Unknown</PersonName></Person>
+      <Date><DateBegin>??</DateBegin></Date>
+    </Production>
+    <Description><Material><Keyword>n/a</Keyword></Material></Description>
+    <Acquisition><Method>found in collection</Method></Acquisition>
+  </Object>
+
+  <Object>
+    <ObjectIdentity><Number>TEST:0005</Number></ObjectIdentity>
+    <Identification>
+      <BriefDescription>Enamel street sign reading De La Warr Road, removed during resurfacing works, white lettering on a blue ground with two fixing holes.</BriefDescription>
+    </Identification>
+    <Production>
+      <Person><PersonName>not known</PersonName><Role>maker</Role></Person>
+      <Date><Period>mid 20th century</Period></Date>
+    </Production>
+    <Description><Material><Keyword>enamelled steel</Keyword></Material></Description>
+    <Acquisition><Method>transfer</Method><Note>Transferred from the borough council depot.</Note></Acquisition>
+  </Object>
+
+  <Object>
+    <ObjectIdentity><Number>TEST:0006</Number></ObjectIdentity>
+    <Identification>
+      <BriefDescription>Souvenir ashtray with a printed view of the Pavilion seen from the beach.</BriefDescription>
+    </Identification>
+    <Production><Date><Period>1930s</Period></Date></Production>
+    <Description><Material><Keyword>ceramic</Keyword></Material></Description>
+    <Acquisition><Note>Bought at a local auction.</Note></Acquisition>
+  </Object>
+</Interchange>

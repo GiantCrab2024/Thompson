@@ -187,3 +187,36 @@ this. Note the use of charset directives in HTML to enforce this.
 It's interesting that the LLM will happily interpret XML entities on
 input and generate UTF-8 output: hence potential mojibake issues! A
 proper XML parser will fix this.
+
+flagging/
+---------
+
+The flagging module for the "Ethics as gateways" experiment (Let's Get
+Real 2026). See thompson_flagging_spec.md and the experiment planner,
+Appendix A, for the gate definitions.
+
+* gate2.py: Sufficiency gate. Detail Score 0-3 from MODES record fields,
+  scored before generation using the planner's five-element rule, so the
+  module and the paper fallback agree. No model calls.
+* gate3.py: Grounding gate. Corpus Reliance Score 0-3 from two separate
+  model calls: claim extraction, then classification against the record
+  fields and the admitted source passages retrieved for that output.
+* flag.py: the flag matrix combining the two scores.
+* consistency.py: runs Gate 3 twice on the same outputs and lists
+  disagreements, before the gate is trusted for the main runs.
+* sheets.py: CSV copies of Sheet B2 (records) and Sheet B3 (claim table).
+* modes.py: reads MODES XML or CSV exports. ELEMENT_RULES maps MODES tags
+  to the Gate 2 elements and must be checked against the real export.
+* pipeline.py: batch scoring. Documents the JSON Lines format that the
+  generation step must write, including the retrieved passages.
+
+Run it with
+
+   python3 -m flagging gate2 EXPORT.xml --out gate2.csv
+   python3 -m flagging consistency EXPORT.xml --outputs five.jsonl --model MODEL
+   python3 -m flagging run EXPORT.xml --samples samples.csv --outputs outputs.jsonl --model MODEL
+
+Tests use synthetic fixtures and a fake model client, and make no network
+calls:
+
+   python3 -m unittest discover -s tests -t .
