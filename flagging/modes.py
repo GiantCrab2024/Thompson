@@ -61,7 +61,15 @@ CURRENT_VALUES = {"", "current"}
 # valuations, insurance, audit trails and personal contact details.
 SKIP_TAGS = {"Valuation", "Insurance", "Audit", "ObjectLocation", "Location", "Movement",
              "Despatch", "Address", "Phone", "Email", "Price", "Recorder", "RecordProgress",
-             "Object"}
+             "Filename", "Object"}
+
+# People named as donors, sellers, depositors or lenders are withheld from
+# the gates and from model prompts. DLWP records often put the donor's home
+# address inside PersonName, and the planner's standard A4 rules out
+# personal data about living people. Makers, owners and people the object
+# is associated with stay in.
+PERSONAL_DATA_RULES = ["**/Acquisition*/Person*", "**/Transfer*/Person*",
+                       "**/Deposit*/Person*", "**/Entry*/Person*", "**/LoanIn*/Person*"]
 
 # Gate 2 elements -> path patterns (case-insensitive). Each "/"-separated
 # segment is an fnmatch pattern, so "Date*" matches "Date (creation date)"
@@ -89,7 +97,7 @@ ELEMENT_RULES = {
     ],
     # Ownership is "the provenance of the item" (guide 1.178).
     "acquisition": [
-        "**/Acquisition*", "**/Ownership*",
+        "**/Acquisition*", "**/Transfer*", "**/Ownership*",
     ],
 }
 
@@ -98,7 +106,7 @@ ELEMENT_RULES = {
 QUALIFIER_TAGS = ["Type", "System", "Authority", "References", "Role", "Accuracy",
                   "Part", "Language", "Consent", "Method", "Note"]
 ELEMENT_EXCLUDE = {
-    "date": QUALIFIER_TAGS,
+    "date": [t for t in QUALIFIER_TAGS if t != "Note"],   # see gate2.real_texts
     "maker": QUALIFIER_TAGS,
     "materials": QUALIFIER_TAGS,
     "acquisition": ["Authority", "References", "System"],
@@ -163,29 +171,35 @@ def _withhold_reason(elem) -> str:
 
 # "material :bronze" -- a short label, a colon, then the value. Bexhill's
 # coin records write Aspect this way instead of using a Type child.
-LABEL_PREFIX = re.compile(r"\s*([A-Za-z][A-Za-z /-]{0,29}?)\s*:")
+# DLWP records also write a bare label with the value in child elements
+# ("main material" + Keyword "paper"), so the label may stand alone.
+LABEL_PREFIX = re.compile(r"\s*([A-Za-z][A-Za-z /-]{0,29}?)\s*(?::|$)")
 
 
-def _segment(elem) -> str:
+def _segment(elem):
+    """Return (path segment, length of label prefix to drop from the text)."""
     label = (elem.get("elementtype") or "").strip()
+    cut = 0
     if not label and _tag(elem) == "Aspect":
         t = next((c for c in elem if _tag(c) == "Type"), None)
         label = " ".join((t.text or "").split()) if t is not None else ""
         if not label:
             m = LABEL_PREFIX.match(elem.text or "")
-            label = m.group(1).strip().lower() if m else ""
-    return "%s (%s)" % (_tag(elem), label) if label else _tag(elem)
+            if m:
+                label, cut = m.group(1).strip().lower(), m.end()
+    return ("%s (%s)" % (_tag(elem), label) if label else _tag(elem)), cut
 
 
 def _flatten(elem, prefix, out, withheld, top=False):
-    path = "%s/%s" % (prefix, _segment(elem)) if prefix else _segment(elem)
-    reason = _withhold_reason(elem)
+    segment, cut = _segment(elem)
+    path = "%s/%s" % (prefix, segment) if prefix else segment
+    reason = _withhold_reason(elem) or ("personal data" if match_rules(path, PERSONAL_DATA_RULES, descendants=False) else "")
     if reason:
         withheld.append("%s (%s)" % (path, reason))
         return
     if not top and _tag(elem) in SKIP_TAGS:
         return
-    own = [elem.text or ""]
+    own = [(elem.text or "")[cut:]]
     blocks = []
     for child in elem:
         if _tag(child) in INLINE_TAGS:

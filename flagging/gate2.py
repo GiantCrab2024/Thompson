@@ -20,7 +20,7 @@ score. No model calls are made here.
 import re
 from dataclasses import dataclass, field
 
-from .modes import ELEMENT_EXCLUDE, ELEMENT_RULES, MARKS_RULES, Record, texts_for
+from .modes import ELEMENT_EXCLUDE, ELEMENT_RULES, MARKS_RULES, Record, match_rules, texts_for
 
 STUB_TEXT = "Insufficient source material"
 CAVEAT_TEXT = ("Caveat: this record holds limited source detail (Detail Score 2). "
@@ -37,6 +37,7 @@ PLACEHOLDERS = {
     "", "?", "??", "???", "unknown", "not known", "unk", "n/a", "na", "none",
     "nil", "-", "--", "tbc", "to be confirmed", "unrecorded", "not recorded",
     "no provenance", "provenance unknown", "unprovenanced",
+    "n\\a", "not given", "none given", "undated", "not dated", "not checked",
 }
 
 # Bexhill's coin records mark an unknown designer by the coin side and a
@@ -55,8 +56,17 @@ def is_placeholder(text: str) -> bool:
 
 
 def real_texts(record: Record, element: str) -> list:
-    texts = texts_for(record, ELEMENT_RULES[element], ELEMENT_EXCLUDE.get(element, ()))
-    return [t for t in texts if not is_placeholder(t)]
+    rules, skip = ELEMENT_RULES[element], {t.lower() for t in ELEMENT_EXCLUDE.get(element, ())}
+    texts = []
+    for p, t in record.fields:
+        if not match_rules(p, rules) or p.rsplit("/", 1)[-1].lower() in skip or is_placeholder(t):
+            continue
+        # A date Note counts only if it holds a date ("c1960"), not a
+        # qualifier on its own ("circa", "undated").
+        if element == "date" and p.lower().endswith("/note") and not re.search(r"\d", t):
+            continue
+        texts.append(t)
+    return texts
 
 
 def word_count(text: str) -> int:

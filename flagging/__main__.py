@@ -1,5 +1,6 @@
 """Command line for the flagging module.
 
+  python3 -m flagging sample EXPORT.xml --seed N [--random 30 --thin 5 --noise 5] --out samples.csv
   python3 -m flagging gate2 EXPORT [--samples SAMPLES.csv] [--out gate2.csv]
   python3 -m flagging run EXPORT --outputs OUTPUTS.jsonl --model MODEL [--samples SAMPLES.csv] [--out-dir DIR]
   python3 -m flagging consistency EXPORT --outputs FIVE.jsonl --model MODEL [--out-dir DIR]
@@ -28,6 +29,28 @@ def _selected(args):
 
 def _client(args):
     return CountingClient(OpenAIChatClient(model=args.model, temperature=args.temperature, env_file=args.env_file))
+
+
+def cmd_sample(args):
+    from .sample import draw, grouped_records
+    grouped = grouped_records(args.export)
+    sample = draw(grouped, args.seed, args.random, args.thin, args.noise)
+    columns = ["MODES no.", "Sample", "Detail", "Gate 2", "Group", "Brief description"]
+    rows = []
+    for record, code, group in sample:
+        g2 = score_record(record)
+        brief = next((t for p, t in record.fields if p.endswith("BriefDescription")), "")
+        rows.append({"MODES no.": record.number, "Sample": code, "Detail": g2.detail_score,
+                     "Gate 2": g2.decision, "Group": group, "Brief description": brief})
+    sheets.write_csv(args.out, columns, rows)
+    groups = {}
+    for _, g in grouped:
+        groups[g] = groups.get(g, 0) + 1
+    codes = {}
+    for _, c, _ in sample:
+        codes[c] = codes.get(c, 0) + 1
+    print("export groups:", groups)
+    print("drew %d records (%s) with seed %d; wrote %s" % (len(sample), codes, args.seed, args.out))
 
 
 def cmd_gate2(args):
@@ -95,6 +118,15 @@ def main(argv=None):
             sp.add_argument("--temperature", type=float, default=0.0)
             sp.add_argument("--env-file", help=".env file holding OPENAI_API_KEY and OPENAI_API_URL")
             sp.add_argument("--out-dir", default="flagging_out")
+
+    smp = sub.add_parser("sample", help="draw the R / T / N record sample from an export")
+    smp.add_argument("export", help="MODES XML export")
+    smp.add_argument("--seed", type=int, required=True, help="record this with the results")
+    smp.add_argument("--random", type=int, default=30)
+    smp.add_argument("--thin", type=int, default=5)
+    smp.add_argument("--noise", type=int, default=5)
+    smp.add_argument("--out", required=True)
+    smp.set_defaults(func=cmd_sample)
 
     g2 = sub.add_parser("gate2", help="score records for Gate 2 (no model calls)")
     common(g2, model=False)

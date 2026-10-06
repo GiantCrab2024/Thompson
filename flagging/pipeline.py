@@ -62,6 +62,12 @@ def select_records(records: list, samples: list = None) -> list:
     if samples is None:
         return [(r, "") for r in records]
     by_number = {r.number: r for r in records}
+    counts = {}
+    for r in records:
+        counts[r.number] = counts.get(r.number, 0) + 1
+    ambiguous = [n for n, _ in samples if counts.get(n, 0) > 1]
+    if ambiguous:
+        raise ValueError("record numbers used by more than one record in the export: %s" % ", ".join(ambiguous))
     missing = [n for n, _ in samples if n not in by_number]
     if missing:
         raise ValueError("records in the sample list but not in the export: %s" % ", ".join(missing))

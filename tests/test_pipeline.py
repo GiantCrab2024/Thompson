@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from flagging import consistency, flag, sheets
+from flagging.gate2 import score_record
 from flagging.llm import CountingClient
 from flagging.modes import load_export
 from flagging.pipeline import load_outputs, load_samples, score_batch, select_records
@@ -41,6 +42,35 @@ class FlagMatrix(unittest.TestCase):
                  (1, None, flag.RED), (3, None, "")]
         for detail, cr, expected in cases:
             self.assertEqual(flag.combine(detail, cr), expected, (detail, cr))
+
+
+class Sampling(unittest.TestCase):
+    def test_groups_and_draw(self):
+        from flagging.sample import draw, grouped_records
+        grouped = grouped_records(EXPORT)
+        groups = {r.number: g for r, g in grouped}
+        self.assertEqual(groups["TEST:0005"], "road")
+        self.assertEqual(groups["TEST:0001"], "pavilion")
+        first = draw(grouped, seed=7, n_random=3, n_thin=2, n_noise=1)
+        again = draw(grouped, seed=7, n_random=3, n_thin=2, n_noise=1)
+        self.assertEqual([(r.number, c) for r, c, _ in first], [(r.number, c) for r, c, _ in again])
+        codes = [c for _, c, _ in first]
+        self.assertEqual((codes.count("R"), codes.count("N")), (3, 1))
+        self.assertEqual(len({r.number for r, _, _ in first}), len(first))
+        for r, c, g in first:
+            if c == "T":
+                self.assertLessEqual(score_record(r).detail_score, 1)
+            if c in ("R", "T"):
+                self.assertEqual(g, "pavilion")
+
+
+class Selection(unittest.TestCase):
+    def test_duplicate_record_number_refused(self):
+        from flagging.modes import Record
+        recs = [Record("D:1"), Record("D:1"), Record("D:2")]
+        with self.assertRaises(ValueError):
+            select_records(recs, [("D:1", "R")])
+        self.assertEqual(len(select_records(recs, [("D:2", "R")])), 1)
 
 
 class Batch(unittest.TestCase):

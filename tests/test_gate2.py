@@ -126,9 +126,49 @@ class SchemaHandling(unittest.TestCase):
                 '</Description></Object>').encode()
         [rec] = parse_modes_xml(data)
         f = dict(rec.fields)
-        self.assertEqual(f["Object/Description/Aspect (material)"], "material :copper alloy")
+        self.assertEqual(f["Object/Description/Aspect (material)"], "copper alloy")
         self.assertIn("Object/Description/Aspect (obverse)", f)
         self.assertTrue(score_record(rec).elements["materials"])
+
+    def test_bare_aspect_label_with_child_values(self):
+        # Invented values in the layout of the DLWP records.
+        data = (b'<Object><Description>'
+                b'<Aspect>main material<Part>medium</Part><Keyword>card</Keyword></Aspect>'
+                b'</Description></Object>')
+        [rec] = parse_modes_xml(data)
+        self.assertEqual(dict(rec.fields)["Object/Description/Aspect (main material)/Keyword"], "card")
+        self.assertTrue(score_record(rec).elements["materials"])
+
+    def test_empty_labelled_aspect_is_absent(self):
+        [rec] = parse_modes_xml(b'<Object><Description><Aspect>material :<Keyword/></Aspect></Description></Object>')
+        self.assertEqual(rec.fields, [])
+        self.assertFalse(score_record(rec).elements["materials"])
+
+    def test_date_note_counts_only_with_a_date(self):
+        with_date = Record("D1", [("Object/Production/Date/Note", "c1960")])
+        undated = Record("D2", [("Object/Production/Date/Note", "undated"),
+                                ("Object/Production/Date/DateBegin/Note", "circa")])
+        self.assertTrue(score_record(with_date).elements["date"])
+        self.assertFalse(score_record(undated).elements["date"])
+
+    def test_donor_names_withheld_but_acquisition_counts(self):
+        data = (b'<Object><ObjectIdentity><Number>P1</Number></ObjectIdentity>'
+                b'<Acquisition><Method>gift</Method><Person><Role>from</Role>'
+                b'<PersonName>Donor, A (Mrs), 1 Example Road, Bexhill</PersonName></Person></Acquisition>'
+                b'<Transfer><Method>gift</Method><Person><PersonName>Donor, B</PersonName></Person></Transfer>'
+                b'<Production><Person><PersonName>A maker</PersonName></Person></Production></Object>')
+        [rec] = parse_modes_xml(data)
+        text = rec.as_prompt_text()
+        self.assertNotIn("Donor", text)
+        self.assertNotIn("Example Road", text)
+        self.assertIn("A maker", text)
+        self.assertEqual(rec.withheld, ["Object/Acquisition/Person (personal data)",
+                                        "Object/Transfer/Person (personal data)"])
+        self.assertTrue(score_record(rec).elements["acquisition"])
+
+    def test_internal_file_paths_dropped(self):
+        [rec] = parse_modes_xml(b'<Object><Reproduction><Filename>X:\\a\\b.jpg</Filename></Reproduction></Object>')
+        self.assertEqual(rec.fields, [])
 
     def test_obverse_aspect_is_not_material(self):
         [rec] = parse_modes_xml(b'<Object><Description><Aspect>obverse :a head</Aspect></Description></Object>')
@@ -174,7 +214,7 @@ class DescriptionLength(unittest.TestCase):
 class Placeholders(unittest.TestCase):
     def test_placeholders(self):
         for v in ["?", "Unknown", "unknown.", " ?? ", "N/A", "-", "(not known)",
-                  "No Provenance", "R?", "Ob?", "Ob/R?"]:
+                  "No Provenance", "R?", "Ob?", "Ob/R?", "n\\a", "undated", "not checked"]:
             self.assertTrue(is_placeholder(v), v)
         for v in ["c. 1935?", "1930s", "Unknown maker's mark on base", "A Designer -Ob", "Rex?"]:
             self.assertFalse(is_placeholder(v), v)
