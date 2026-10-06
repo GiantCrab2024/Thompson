@@ -25,6 +25,7 @@ Tag names follow the MODES Object schema v6.5 (object65.xsd) and the guide
 
 import csv
 import fnmatch
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
@@ -59,7 +60,8 @@ CURRENT_VALUES = {"", "current"}
 # Sections never passed to the gates or to a model: storage locations,
 # valuations, insurance, audit trails and personal contact details.
 SKIP_TAGS = {"Valuation", "Insurance", "Audit", "ObjectLocation", "Location", "Movement",
-             "Despatch", "Address", "Phone", "Email", "Price", "Object"}
+             "Despatch", "Address", "Phone", "Email", "Price", "Recorder", "RecordProgress",
+             "Object"}
 
 # Gate 2 elements -> path patterns (case-insensitive). Each "/"-separated
 # segment is an fnmatch pattern, so "Date*" matches "Date (creation date)"
@@ -159,11 +161,19 @@ def _withhold_reason(elem) -> str:
     return ""
 
 
+# "material :bronze" -- a short label, a colon, then the value. Bexhill's
+# coin records write Aspect this way instead of using a Type child.
+LABEL_PREFIX = re.compile(r"\s*([A-Za-z][A-Za-z /-]{0,29}?)\s*:")
+
+
 def _segment(elem) -> str:
     label = (elem.get("elementtype") or "").strip()
     if not label and _tag(elem) == "Aspect":
         t = next((c for c in elem if _tag(c) == "Type"), None)
         label = " ".join((t.text or "").split()) if t is not None else ""
+        if not label:
+            m = LABEL_PREFIX.match(elem.text or "")
+            label = m.group(1).strip().lower() if m else ""
     return "%s (%s)" % (_tag(elem), label) if label else _tag(elem)
 
 

@@ -118,6 +118,22 @@ class SchemaHandling(unittest.TestCase):
         self.assertTrue(r.elements["date"])
         self.assertTrue(r.elements["materials"])   # via the photo format Aspect
 
+    def test_aspect_labelled_by_text_prefix(self):
+        # Invented values in the layout of Bexhill's coin records.
+        data = ('<Object><ObjectIdentity><Number>A1</Number></ObjectIdentity><Description>'
+                '<Aspect>material :copper alloy<Keyword></Keyword></Aspect>'
+                '<Aspect>obverse :a laureate head<Keyword></Keyword></Aspect>'
+                '</Description></Object>').encode()
+        [rec] = parse_modes_xml(data)
+        f = dict(rec.fields)
+        self.assertEqual(f["Object/Description/Aspect (material)"], "material :copper alloy")
+        self.assertIn("Object/Description/Aspect (obverse)", f)
+        self.assertTrue(score_record(rec).elements["materials"])
+
+    def test_obverse_aspect_is_not_material(self):
+        [rec] = parse_modes_xml(b'<Object><Description><Aspect>obverse :a head</Aspect></Description></Object>')
+        self.assertFalse(score_record(rec).elements["materials"])
+
     def test_maker_life_dates_are_not_a_production_date(self):
         rec = Record("L", [("Object/Production/Person/PersonName", "A maker"),
                            ("Object/Production/Person/Dates", "1890-1960")])
@@ -157,9 +173,10 @@ class DescriptionLength(unittest.TestCase):
 
 class Placeholders(unittest.TestCase):
     def test_placeholders(self):
-        for v in ["?", "Unknown", "unknown.", " ?? ", "N/A", "-", "(not known)"]:
+        for v in ["?", "Unknown", "unknown.", " ?? ", "N/A", "-", "(not known)",
+                  "No Provenance", "R?", "Ob?", "Ob/R?"]:
             self.assertTrue(is_placeholder(v), v)
-        for v in ["c. 1935?", "1930s", "Unknown maker's mark on base"]:
+        for v in ["c. 1935?", "1930s", "Unknown maker's mark on base", "A Designer -Ob", "Rex?"]:
             self.assertFalse(is_placeholder(v), v)
 
 

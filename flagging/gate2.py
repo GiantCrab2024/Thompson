@@ -36,14 +36,19 @@ GENERIC_LABEL_MAX_WORDS = 4
 PLACEHOLDERS = {
     "", "?", "??", "???", "unknown", "not known", "unk", "n/a", "na", "none",
     "nil", "-", "--", "tbc", "to be confirmed", "unrecorded", "not recorded",
+    "no provenance", "provenance unknown", "unprovenanced",
 }
+
+# Bexhill's coin records mark an unknown designer by the coin side and a
+# question mark: "R?" (reverse), "Ob?" (obverse), "Ob/R?".
+SIDE_UNKNOWN = re.compile(r"(ob|obv|r|rev)(/(ob|obv|r|rev))?\s*\?+")
 
 ELEMENT_ORDER = ["description", "date", "maker", "materials", "acquisition"]
 
 
 def is_placeholder(text: str) -> bool:
     core = text.strip().lower().strip(" .,;:()[]\"'")
-    if core in PLACEHOLDERS:
+    if core in PLACEHOLDERS or SIDE_UNKNOWN.fullmatch(core):
         return True
     # Text made only of question marks, dashes and spaces.
     return re.fullmatch(r"[?\-\s]*", core) is not None
