@@ -28,7 +28,8 @@ class CleanNumber(unittest.TestCase):
 
     def test_equals_range(self):
         self.check("ABCDE : 2001.5.12=49", "ABCDE : 2001.5.12-49")
-        self.check("ABCDE : 2001.5.74=5", "ABCDE : 2001.5.74-5", review=True)
+        self.check("ABCDE : 2001.5.74=5", "ABCDE : 2001.5.74-75", review=True)
+        self.check("ABCDE : 2001.5.98=3", "ABCDE : 2001.5.98-3", review=True)   # can't be expanded
 
     def test_typing_slips(self):
         self.check("ABCDE : 2001,5.3", "ABCDE : 2001.5.3", review=True)

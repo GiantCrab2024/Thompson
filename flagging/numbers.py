@@ -76,9 +76,21 @@ def clean_number(raw: str) -> CleanNumber:
     if "=" in rest:
         rest = rest.replace("=", "-")
         result.changes.append("'=' range changed to '-'")
-        for start, end in re.findall(r"(\d+)-(\d+)", rest):
-            if len(end) < len(start) or int(end) <= int(start):
-                result.review.append("range end looks shortened (%s-%s)" % (start, end))
+
+        # "74-5" is shorthand for 74-75; write the end in full, as the
+        # other ranges in the export do.
+        def expand(m):
+            start, end = m.group(1), m.group(2)
+            if len(end) < len(start):
+                full = start[:len(start) - len(end)] + end
+                if int(full) > int(start):
+                    result.changes.append("range end %s written in full as %s" % (end, full))
+                    result.review.append("check range %s-%s means %s-%s" % (start, end, start, full))
+                    return "%s-%s" % (start, full)
+            if int(end) <= int(start):
+                result.review.append("range end not after start (%s-%s)" % (start, end))
+            return m.group(0)
+        rest = re.sub(r"(\d+)-(\d+)$", expand, rest)
 
     if re.search(r"[,\s]", rest) or re.search(r"\d[a-z]-[a-z]$", rest):
         result.review.append("several items in one number")
