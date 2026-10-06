@@ -104,6 +104,8 @@ def score_record(record: Record) -> Gate2Result:
         notes.append("description is a bare label: %r" % longest)
     if not [t for t in texts_for(record, MARKS_RULES) if not is_placeholder(t)]:
         notes.append("no marks, inscriptions or condition notes")
+    if record.withheld:
+        notes.append("confidential fields withheld: " + ", ".join(record.withheld))
 
     return Gate2Result(
         record_number=record.number,

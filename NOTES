@@ -205,8 +205,10 @@ Appendix A, for the gate definitions.
 * consistency.py: runs Gate 3 twice on the same outputs and lists
   disagreements, before the gate is trusted for the main runs.
 * sheets.py: CSV copies of Sheet B2 (records) and Sheet B3 (claim table).
-* modes.py: reads MODES XML or CSV exports. ELEMENT_RULES maps MODES tags
-  to the Gate 2 elements and must be checked against the real export.
+* modes.py: reads MODES XML (Object schema v6.5) or CSV exports.
+  ELEMENT_RULES maps MODES tags to the Gate 2 elements. Elements marked
+  confidential, and admin sections such as Valuation, Insurance and
+  storage Location, are withheld from the gates and from model prompts.
 * pipeline.py: batch scoring. Documents the JSON Lines format that the
   generation step must write, including the retrieved passages.
 

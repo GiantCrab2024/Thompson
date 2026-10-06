@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 from flagging.gate2 import STUB_TEXT, is_placeholder, score_from_count, score_record, should_generate
-from flagging.modes import Record, load_export, parse_modes_csv
+from flagging.modes import Record, load_export, parse_modes_csv, parse_modes_xml
 
 FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "synthetic_modes_export.xml")
 
@@ -26,6 +26,10 @@ class SyntheticExport(unittest.TestCase):
         "TEST:0004": (0, "Stop", 1),  # placeholders everywhere
         "TEST:0005": (2, "Go", 4),   # "De La Warr Road" noise record; maker "not known"
         "TEST:0006": (2, "Go", 3),   # description is 13 words, under the 15-word bar
+        "TEST:0007": (2, "Go", 4),   # inline markup and mixed-content maker
+        "TEST:0008": (2, "Go", 4),   # acquisition marked confidential
+        "TEST:0009": (0, "Stop", 1),  # nested ItemList object doesn't count
+        "TEST:0010": (0, "Stop", 0),  # whole record confidential
     }
 
     def test_all_records_parsed(self):
@@ -58,6 +62,56 @@ class SyntheticExport(unittest.TestCase):
         self.assertFalse(should_generate(r, "B"))
 
 
+class SchemaHandling(unittest.TestCase):
+    def setUp(self):
+        self.records = by_number()
+
+    def fields(self, number):
+        return dict(self.records[number].fields)
+
+    def test_inline_markup_joined_into_parent(self):
+        f = self.fields("TEST:0007")
+        self.assertEqual(f["Object/Identification/BriefDescription"],
+                         "A signed poster advertising the opening of the De La Warr Pavilion in "
+                         "December with a drawing of the terrace.")
+        self.assertEqual(f["Object/Production/Person"], "Edward McKnight Kauffer")
+        self.assertNotIn("Object/Identification/BriefDescription/emph", f)
+
+    def test_confidential_and_admin_fields_withheld(self):
+        rec = self.records["TEST:0008"]
+        text = rec.as_prompt_text()
+        for hidden in ("private seller", "purchase", "Insured value", "B4"):
+            self.assertNotIn(hidden, text)
+        self.assertEqual(rec.withheld, ["Object/Acquisition"])
+        self.assertTrue(any("withheld" in n for n in score_record(rec).notes))
+
+    def test_nested_object_not_a_record_or_parent_field(self):
+        self.assertNotIn("TEST:0009.1", self.records)
+        self.assertNotIn("studio photographer", self.records["TEST:0009"].as_prompt_text())
+
+    def test_whole_record_confidential(self):
+        rec = self.records["TEST:0010"]
+        self.assertEqual((rec.fields, rec.withheld), ([], ["Object"]))
+
+    def test_latin1_and_namespaces(self):
+        data = ('<?xml version="1.0" encoding="iso-8859-1"?>'
+                '<t:Interchange xmlns:t="http://www.w3.org/namespace/"><t:Object>'
+                '<t:ObjectIdentity><t:Number>N1</t:Number></t:ObjectIdentity>'
+                '<t:Production><t:Person><t:PersonName>Ren\u00e9e Caf\u00e9</t:PersonName></t:Person></t:Production>'
+                '</t:Object></t:Interchange>').encode("iso-8859-1")
+        [rec] = parse_modes_xml(data)
+        self.assertEqual(rec.number, "N1")
+        self.assertIn(("Object/Production/Person/PersonName", "Ren\u00e9e Caf\u00e9"), rec.fields)
+
+    def test_qualifiers_alone_are_not_values(self):
+        rec = Record("Q", [("Object/Production/Person/Role", "maker"),
+                           ("Object/Production/Date/Type", "production"),
+                           ("Object/Production/Date/Note", "date uncertain")])
+        r = score_record(rec)
+        self.assertFalse(r.elements["maker"])
+        self.assertFalse(r.elements["date"])
+
+
 class DescriptionLength(unittest.TestCase):
     def record(self, words):
         desc = " ".join("word%d" % i for i in range(words))
@@ -79,7 +133,8 @@ class Placeholders(unittest.TestCase):
 class CsvExport(unittest.TestCase):
     def test_csv_columns_map_to_elements(self):
         with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8") as f:
-            f.write("ObjectNumber,BriefDescription,DateMade,Maker,Material,Acquisition\n")
+            f.write("ObjectIdentity/Number,Identification/BriefDescription,Production.Date,"
+                    "Production>Person>PersonName,Description/Material,Acquisition/Method\n")
             f.write("C1,%s,1935,Unknown,paper,gift\n" % " ".join(["w"] * 16))
         try:
             [rec] = parse_modes_csv(f.name)
