@@ -210,12 +210,19 @@ Appendix A, for the gate definitions.
   maps MODES tags to the Gate 2 elements. Elements marked confidential or
   not current, and admin sections such as Valuation, Insurance and storage
   Location, are withheld from the gates and from model prompts.
+* numbers.py and clean.py: put record numbers into one format and resolve
+  records that share a number, writing a cleaned working copy of an export
+  and a report that doubles as a worklist for correcting MODES.
+* sample.py: draws the planner's random, thin and noise records from a
+  fixed seed.
 * pipeline.py: batch scoring. Documents the JSON Lines format that the
   generation step must write, including the retrieved passages.
 
 Run it with
 
-   python3 -m flagging gate2 EXPORT.xml --out gate2.csv
+   python3 -m flagging clean EXPORT.xml --out-xml CLEAN.xml --report clean_report.csv
+   python3 -m flagging sample CLEAN.xml --seed N --out samples.csv
+   python3 -m flagging gate2 CLEAN.xml --samples samples.csv --out gate2.csv
    python3 -m flagging consistency EXPORT.xml --outputs five.jsonl --model MODEL
    python3 -m flagging run EXPORT.xml --samples samples.csv --outputs outputs.jsonl --model MODEL
 

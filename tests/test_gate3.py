@@ -7,7 +7,7 @@ from flagging.llm import CountingClient
 from flagging.modes import Record
 from tests.fakes import FakeClient
 
-RECORD = Record("TEST:0001", [
+RECORD = Record("TEST : 0001", [
     ("Object/Identification/BriefDescription", "Photograph of the south staircase of the De La Warr Pavilion."),
     ("Object/Production/Date/DateBegin", "1936"),
 ])
@@ -41,7 +41,7 @@ class TwoCalls(unittest.TestCase):
             labels={"It was designed by Erich Mendelsohn and Serge Chermayeff.": "UNGROUNDED"},
             names=("Mendelsohn",))
         self.client = CountingClient(self.fake)
-        self.res = run_gate3(self.client, RECORD, TEXT, PASSAGES, "TEST:0001-B", "B")
+        self.res = run_gate3(self.client, RECORD, TEXT, PASSAGES, "TEST : 0001-B", "B")
 
     def test_two_separate_calls(self):
         self.assertEqual(self.res.model_calls, 2)
@@ -72,7 +72,7 @@ class TwoCalls(unittest.TestCase):
 
     def test_frozen_claims_skip_extraction(self):
         claims = [c.claim for c in self.res.claims]
-        again = run_gate3(self.client, RECORD, TEXT, PASSAGES, "TEST:0001-B", "B", claims=claims)
+        again = run_gate3(self.client, RECORD, TEXT, PASSAGES, "TEST : 0001-B", "B", claims=claims)
         self.assertEqual(again.model_calls, 1)
         self.assertEqual(self.fake.log[-1][0], CLASSIFICATION_SYSTEM)
 

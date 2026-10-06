@@ -26,15 +26,19 @@ Tag names follow the MODES Object schema v6.5 (object65.xsd) and the guide
 import csv
 import fnmatch
 import re
+
+from .numbers import clean_number
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
 
 @dataclass
 class Record:
-    number: str
+    number: str                                   # cleaned, see numbers.py
     fields: list = field(default_factory=list)    # [(path, text), ...]
     withheld: list = field(default_factory=list)  # "path (reason)" for each element left out
+    raw_number: str = ""                          # the number exactly as exported
+    number_note: str = ""                         # annotation moved out of the number
 
     def as_prompt_text(self) -> str:
         """Record fields as 'path: text' lines for model prompts. The
@@ -222,16 +226,23 @@ def _record_number(fields) -> str:
     return ""
 
 
+def _with_clean_number(record: Record, raw: str) -> Record:
+    cleaned = clean_number(raw)
+    record.raw_number, record.number, record.number_note = raw, cleaned.clean, cleaned.note
+    return record
+
+
 def record_from_element(obj) -> Record:
+    num = obj.find("./{*}ObjectIdentity/{*}Number")
+    raw = "".join(num.itertext()) if num is not None else None
     reason = _withhold_reason(obj)
     if reason:
         # Whole record withheld: keep only its number so it still appears on B2.
-        num = obj.find("./{*}ObjectIdentity/{*}Number")
-        number = " ".join((num.text or "").split()) if num is not None else ""
-        return Record(number=number, fields=[], withheld=["Object (%s)" % reason])
+        return _with_clean_number(Record(number="", fields=[], withheld=["Object (%s)" % reason]), raw or "")
     fields, withheld = [], []
     _flatten(obj, "", fields, withheld, top=True)
-    return Record(number=_record_number(fields), fields=fields, withheld=withheld)
+    return _with_clean_number(Record(number="", fields=fields, withheld=withheld),
+                              raw if raw is not None else _record_number(fields))
 
 
 def parse_modes_xml(data) -> list:
@@ -257,7 +268,7 @@ def parse_modes_csv(path: str, number_column: str = "ObjectIdentity/Number") -> 
                 if k and v and v.strip():
                     p = k.strip().replace(">", "/").replace(".", "/")
                     fields.append(("Object/" + p, " ".join(v.split())))
-            records.append(Record(number=(row.get(number_column) or "").strip(), fields=fields))
+            records.append(_with_clean_number(Record(number="", fields=fields), row.get(number_column) or ""))
     return records
 
 

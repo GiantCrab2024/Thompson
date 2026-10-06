@@ -1,5 +1,6 @@
 """Command line for the flagging module.
 
+  python3 -m flagging clean EXPORT.xml --out-xml CLEAN.xml --report clean_report.csv
   python3 -m flagging sample EXPORT.xml --seed N [--random 30 --thin 5 --noise 5] --out samples.csv
   python3 -m flagging gate2 EXPORT [--samples SAMPLES.csv] [--out gate2.csv]
   python3 -m flagging run EXPORT --outputs OUTPUTS.jsonl --model MODEL [--samples SAMPLES.csv] [--out-dir DIR]
@@ -29,6 +30,19 @@ def _selected(args):
 
 def _client(args):
     return CountingClient(OpenAIChatClient(model=args.model, temperature=args.temperature, env_file=args.env_file))
+
+
+def cmd_clean(args):
+    from .clean import REPORT_COLUMNS, clean_export
+    rows = clean_export(args.export, args.out_xml)
+    sheets.write_csv(args.report, REPORT_COLUMNS, rows)
+    actions = {}
+    for r in rows:
+        key = r["Action"].split(":")[0]
+        actions[key] = actions.get(key, 0) + 1
+    checks = sum(1 for r in rows if r["Check"])
+    print("%d records: %s; %d to check by hand" % (len(rows), actions, checks))
+    print("wrote %s and %s" % (args.out_xml, args.report))
 
 
 def cmd_sample(args):
@@ -118,6 +132,12 @@ def main(argv=None):
             sp.add_argument("--temperature", type=float, default=0.0)
             sp.add_argument("--env-file", help=".env file holding OPENAI_API_KEY and OPENAI_API_URL")
             sp.add_argument("--out-dir", default="flagging_out")
+
+    cln = sub.add_parser("clean", help="clean record numbers and resolve duplicate records")
+    cln.add_argument("export", help="MODES XML export")
+    cln.add_argument("--out-xml", required=True, help="cleaned working copy to write")
+    cln.add_argument("--report", required=True, help="CSV of every record and what was done")
+    cln.set_defaults(func=cmd_clean)
 
     smp = sub.add_parser("sample", help="draw the R / T / N record sample from an export")
     smp.add_argument("export", help="MODES XML export")

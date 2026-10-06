@@ -49,8 +49,8 @@ class Sampling(unittest.TestCase):
         from flagging.sample import draw, grouped_records
         grouped = grouped_records(EXPORT)
         groups = {r.number: g for r, g in grouped}
-        self.assertEqual(groups["TEST:0005"], "road")
-        self.assertEqual(groups["TEST:0001"], "pavilion")
+        self.assertEqual(groups["TEST : 0005"], "road")
+        self.assertEqual(groups["TEST : 0001"], "pavilion")
         first = draw(grouped, seed=7, n_random=3, n_thin=2, n_noise=1)
         again = draw(grouped, seed=7, n_random=3, n_thin=2, n_noise=1)
         self.assertEqual([(r.number, c) for r, c, _ in first], [(r.number, c) for r, c, _ in again])
@@ -84,18 +84,18 @@ class Batch(unittest.TestCase):
     def test_flags(self):
         got = {n: r.flag for n, r in self.by_no.items()}
         self.assertEqual(got, {
-            "TEST:0001": "Pass", "TEST:0002": "Pass, with note", "TEST:0003": "Red",
-            "TEST:0004": "Red", "TEST:0005": "Amber", "TEST:0006": "Pass, with note",
+            "TEST : 0001": "Pass", "TEST : 0002": "Pass, with note", "TEST : 0003": "Red",
+            "TEST : 0004": "Red", "TEST : 0005": "Amber", "TEST : 0006": "Pass, with note",
         })
 
     def test_stopped_record_run_b_output_ignored(self):
-        self.assertIsNone(self.by_no["TEST:0004"].gate3_b)
+        self.assertIsNone(self.by_no["TEST : 0004"].gate3_b)
         self.assertEqual(len(self.warnings), 1)
-        self.assertIn("TEST:0004", self.warnings[0])
+        self.assertIn("TEST : 0004", self.warnings[0])
 
     def test_run_a_still_checked_on_stopped_records(self):
-        self.assertEqual(self.by_no["TEST:0003"].gate3_a.cr_score, 3)   # invented date
-        self.assertEqual(self.by_no["TEST:0004"].gate3_a.cr_score, 0)   # INFERRED only
+        self.assertEqual(self.by_no["TEST : 0003"].gate3_a.cr_score, 3)   # invented date
+        self.assertEqual(self.by_no["TEST : 0004"].gate3_a.cr_score, 0)   # INFERRED only
 
     def test_model_calls(self):
         # 10 outputs scored (one Run B output ignored), 2 calls each.
@@ -108,13 +108,13 @@ class Batch(unittest.TestCase):
             rows = read_csv(path)
         header = rows[0]
         self.assertEqual(header[:len(sheets.B2_COLUMNS)], sheets.B2_COLUMNS)
-        r = dict(zip(header, rows[5]))   # TEST:0005
+        r = dict(zip(header, rows[5]))   # TEST : 0005
         self.assertEqual((r["No."], r["MODES no."], r["Sample"], r["Detail"], r["Gate 2"]),
-                         ("05", "TEST:0005", "N", "2", "Go"))
+                         ("05", "TEST : 0005", "N", "2", "Go"))
         self.assertEqual((r["A claims"], r["A ungr."], r["B claims"], r["B ungr."], r["CR"], r["Flag"]),
                          ("5", "4", "3", "2", "3", "Amber"))
         self.assertEqual((r["Review A"], r["Review B"], r["Gate right?"], r["Mins"]), ("", "", "", ""))
-        stopped = dict(zip(header, rows[4]))   # TEST:0004
+        stopped = dict(zip(header, rows[4]))   # TEST : 0004
         self.assertEqual((stopped["Gate 2"], stopped["B claims"], stopped["CR"], stopped["Flag"]),
                          ("Stop", "", "", "Red"))
 
@@ -131,7 +131,7 @@ class Batch(unittest.TestCase):
         made_by = next(c for c in claims if c["Claim (as worded in the output)"] == "It was made by Pryce and Sons.")
         self.assertEqual((made_by["Output ID"], made_by["Run"], made_by["G / I / U"], made_by["Name or exact date"],
                           made_by["Checked by"], made_by["Corpus Reliance Score"]),
-                         ("TEST:0005-A", "A", "U", "name", "module", "3"))
+                         ("TEST : 0005-A", "A", "U", "name", "module", "3"))
 
 
 class Consistency(unittest.TestCase):
@@ -142,25 +142,25 @@ class Consistency(unittest.TestCase):
         flaky = "It was sold in the Pavilion shop."
         client = fake_client(**{flaky: ["GROUNDED", "UNGROUNDED", "UNGROUNDED"]})
         records = {r.number: r for r in load_export(EXPORT)}
-        outputs = [o for o in load_outputs(OUTPUTS) if o["run"] == "B" and o["record"] != "TEST:0004"]
+        outputs = [o for o in load_outputs(OUTPUTS) if o["run"] == "B" and o["record"] != "TEST : 0004"]
         comps = [consistency.compare_output(client, records[o["record"]], o) for o in outputs]
         self.assertEqual(client.calls, 5 * len(outputs))
 
         claim_rows = consistency.claim_rows(comps)
         bad = [r for r in claim_rows if r["Agree?"] == "NO"]
-        self.assertEqual([(r["Output ID"], r["Claim"]) for r in bad], [("TEST:0006-B", flaky)])
+        self.assertEqual([(r["Output ID"], r["Claim"]) for r in bad], [("TEST : 0006-B", flaky)])
 
         out = {r["Output ID"]: r for r in consistency.output_rows(comps)}
-        self.assertEqual(out["TEST:0006-B"]["Frozen: labels agree"], 1)
-        self.assertEqual((out["TEST:0006-B"]["Frozen: CR 1"], out["TEST:0006-B"]["Frozen: CR 2"]), (0, 1))
-        self.assertEqual((out["TEST:0006-B"]["Full: CR 1"], out["TEST:0006-B"]["Full: CR 2"]), (0, 1))
-        self.assertEqual(out["TEST:0006-B"]["CR agree?"], "NO")
-        self.assertEqual(out["TEST:0006-B"]["Flag agree?"], "yes")   # Pass, with note either way
-        self.assertEqual(out["TEST:0001-B"]["CR agree?"], "yes")
+        self.assertEqual(out["TEST : 0006-B"]["Frozen: labels agree"], 1)
+        self.assertEqual((out["TEST : 0006-B"]["Frozen: CR 1"], out["TEST : 0006-B"]["Frozen: CR 2"]), (0, 1))
+        self.assertEqual((out["TEST : 0006-B"]["Full: CR 1"], out["TEST : 0006-B"]["Full: CR 2"]), (0, 1))
+        self.assertEqual(out["TEST : 0006-B"]["CR agree?"], "NO")
+        self.assertEqual(out["TEST : 0006-B"]["Flag agree?"], "yes")   # Pass, with note either way
+        self.assertEqual(out["TEST : 0001-B"]["CR agree?"], "yes")
 
         text = consistency.summary(comps)
         self.assertIn("claim labels agree: %d of %d" % (len(claim_rows) - 1, len(claim_rows)), text)
-        self.assertIn("TEST:0006-B #2 G -> U", text)
+        self.assertIn("TEST : 0006-B #2 G -> U", text)
 
 
 if __name__ == "__main__":

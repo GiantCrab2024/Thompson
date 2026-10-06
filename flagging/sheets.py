@@ -13,7 +13,8 @@ import csv
 
 B2_COLUMNS = ["No.", "MODES no.", "Sample", "Detail", "Gate 2", "A claims", "A ungr.",
               "B claims", "B ungr.", "CR", "Flag", "Review A", "Review B", "Gate right?", "Mins"]
-B2_EXTRA = ["CR A", "Gate 3 model calls A", "Gate 3 model calls B", "Gate 2 notes", "Gate 3 errors"]
+B2_EXTRA = ["CR A", "Gate 3 model calls A", "Gate 3 model calls B", "Gate 2 notes", "Gate 3 errors",
+            "MODES no. as exported"]
 
 B3_COLUMNS = ["Output ID", "Record", "Run", "Checked by", "Date", "No.",
               "Claim (as worded in the output)", "Basis (MODES field, or source ID and passage)",
@@ -47,6 +48,7 @@ def b2_row(row) -> dict:
         "Gate 3 model calls B": b.model_calls if b else "",
         "Gate 2 notes": "; ".join(g2.notes),
         "Gate 3 errors": errors,
+        "MODES no. as exported": row.record.raw_number if row.record.raw_number != row.record.number else "",
     }
 
 

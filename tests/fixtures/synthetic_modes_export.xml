@@ -3,7 +3,7 @@
      (object65.xsd). These are not Bexhill Museum records. -->
 <Interchange>
   <Object>
-    <ObjectIdentity><Number>TEST:0001</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0001</Number></ObjectIdentity>
     <Identification>
       <ObjectName><Keyword>photograph</Keyword></ObjectName>
       <BriefDescription>Black and white photograph of the south staircase of the De La Warr Pavilion, taken from the terrace, showing the curved glass stair tower and the cantilevered landing.</BriefDescription>
@@ -20,7 +20,7 @@
   </Object>
 
   <Object>
-    <ObjectIdentity><Number>TEST:0002</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0002</Number></ObjectIdentity>
     <Identification>
       <BriefDescription>Printed programme for a dance held in the De La Warr Pavilion ballroom, with a list of the evening's dances and the name of the band.</BriefDescription>
     </Identification>
@@ -32,14 +32,14 @@
   </Object>
 
   <Object>
-    <ObjectIdentity><Number>TEST:0003</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0003</Number></ObjectIdentity>
     <Identification><BriefDescription>Postcard</BriefDescription></Identification>
     <Production><Date><DateBegin>c. 1950</DateBegin></Date></Production>
     <Description><Material><Keyword>card</Keyword></Material></Description>
   </Object>
 
   <Object>
-    <ObjectIdentity><Number>TEST:0004</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0004</Number></ObjectIdentity>
     <Identification><BriefDescription>?</BriefDescription></Identification>
     <Production>
       <Person><PersonName>Unknown</PersonName></Person>
@@ -50,7 +50,7 @@
   </Object>
 
   <Object>
-    <ObjectIdentity><Number>TEST:0005</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0005</Number></ObjectIdentity>
     <Identification>
       <BriefDescription>Enamel street sign reading De La Warr Road, removed during resurfacing works, white lettering on a blue ground with two fixing holes.</BriefDescription>
     </Identification>
@@ -63,7 +63,7 @@
   </Object>
 
   <Object>
-    <ObjectIdentity><Number>TEST:0006</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0006</Number></ObjectIdentity>
     <Identification>
       <BriefDescription>Souvenir ashtray with a printed view of the Pavilion seen from the beach.</BriefDescription>
     </Identification>
@@ -76,7 +76,7 @@
        once <emph> and <q> text is joined back in; the maker's name sits
        directly inside <Person> before a <Role> child. -->
   <Object>
-    <ObjectIdentity><Number>TEST:0007</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0007</Number></ObjectIdentity>
     <Identification>
       <BriefDescription>A <emph>signed</emph> poster advertising the opening of the De La Warr Pavilion in <q>December</q> with a drawing of the terrace.</BriefDescription>
     </Identification>
@@ -89,7 +89,7 @@
 
   <!-- Confidential acquisition and a valuation: neither reaches the gates. -->
   <Object>
-    <ObjectIdentity><Number>TEST:0008</Number><Location><Shelf>B4</Shelf></Location></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0008</Number><Location><Shelf>B4</Shelf></Location></ObjectIdentity>
     <Identification>
       <BriefDescription>Architectural model of the De La Warr Pavilion made for an exhibition, showing the south elevation, the stair towers and the roof terrace.</BriefDescription>
     </Identification>
@@ -105,12 +105,12 @@
   <!-- A nested Object inside ItemList belongs to the album, not to the
        album's own record. -->
   <Object>
-    <ObjectIdentity><Number>TEST:0009</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0009</Number></ObjectIdentity>
     <Identification><BriefDescription>Album of photographs</BriefDescription></Identification>
     <Production><Date>1937</Date></Production>
     <ItemList>
       <Object>
-        <ObjectIdentity><Number>TEST:0009.1</Number></ObjectIdentity>
+        <ObjectIdentity><Number>TEST : 0009.1</Number></ObjectIdentity>
         <Production><Person><PersonName>A studio photographer</PersonName></Person></Production>
         <Description><Material><Keyword>gelatin silver print</Keyword></Material></Description>
         <Acquisition><Method>gift</Method></Acquisition>
@@ -120,7 +120,7 @@
 
   <!-- A whole record marked confidential. -->
   <Object confidentiality="restricted">
-    <ObjectIdentity><Number>TEST:0010</Number></ObjectIdentity>
+    <ObjectIdentity><Number>TEST : 0010</Number></ObjectIdentity>
     <Identification><BriefDescription>Correspondence about the Pavilion with personal details of named individuals who are still living, held under restricted access.</BriefDescription></Identification>
     <Production><Date>1990</Date></Production>
   </Object>

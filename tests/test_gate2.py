@@ -20,16 +20,16 @@ class ScoreBands(unittest.TestCase):
 class SyntheticExport(unittest.TestCase):
     # (Detail Score, decision, elements present) expected for each fixture record.
     EXPECTED = {
-        "TEST:0001": (3, "Go", 5),
-        "TEST:0002": (2, "Go", 3),   # maker is "unknown"; Role alone doesn't count
-        "TEST:0003": (1, "Stop", 2),  # description is a bare label
-        "TEST:0004": (0, "Stop", 1),  # placeholders everywhere
-        "TEST:0005": (2, "Go", 4),   # "De La Warr Road" noise record; maker "not known"
-        "TEST:0006": (2, "Go", 3),   # description is 13 words, under the 15-word bar
-        "TEST:0007": (2, "Go", 4),   # inline markup and mixed-content maker
-        "TEST:0008": (2, "Go", 4),   # acquisition marked confidential
-        "TEST:0009": (0, "Stop", 1),  # nested ItemList object doesn't count
-        "TEST:0010": (0, "Stop", 0),  # whole record confidential
+        "TEST : 0001": (3, "Go", 5),
+        "TEST : 0002": (2, "Go", 3),   # maker is "unknown"; Role alone doesn't count
+        "TEST : 0003": (1, "Stop", 2),  # description is a bare label
+        "TEST : 0004": (0, "Stop", 1),  # placeholders everywhere
+        "TEST : 0005": (2, "Go", 4),   # "De La Warr Road" noise record; maker "not known"
+        "TEST : 0006": (2, "Go", 3),   # description is 13 words, under the 15-word bar
+        "TEST : 0007": (2, "Go", 4),   # inline markup and mixed-content maker
+        "TEST : 0008": (2, "Go", 4),   # acquisition marked confidential
+        "TEST : 0009": (0, "Stop", 1),  # nested ItemList object doesn't count
+        "TEST : 0010": (0, "Stop", 0),  # whole record confidential
     }
 
     def test_all_records_parsed(self):
@@ -44,20 +44,20 @@ class SyntheticExport(unittest.TestCase):
 
     def test_stub_and_caveat(self):
         records = by_number()
-        self.assertEqual(score_record(records["TEST:0004"]).stub, STUB_TEXT)
-        self.assertEqual(score_record(records["TEST:0001"]).stub, "")
-        self.assertTrue(score_record(records["TEST:0002"]).caveat)
-        self.assertEqual(score_record(records["TEST:0001"]).caveat, "")
+        self.assertEqual(score_record(records["TEST : 0004"]).stub, STUB_TEXT)
+        self.assertEqual(score_record(records["TEST : 0001"]).stub, "")
+        self.assertTrue(score_record(records["TEST : 0002"]).caveat)
+        self.assertEqual(score_record(records["TEST : 0001"]).caveat, "")
 
     def test_spec_checks_are_notes_only(self):
         records = by_number()
-        notes3 = score_record(records["TEST:0003"]).notes
+        notes3 = score_record(records["TEST : 0003"]).notes
         self.assertTrue(any("bare label" in n for n in notes3))
         self.assertTrue(any("no marks" in n for n in notes3))
-        self.assertFalse(any("no marks" in n for n in score_record(records["TEST:0001"]).notes))
+        self.assertFalse(any("no marks" in n for n in score_record(records["TEST : 0001"]).notes))
 
     def test_run_a_never_stops(self):
-        r = score_record(by_number()["TEST:0004"])
+        r = score_record(by_number()["TEST : 0004"])
         self.assertTrue(should_generate(r, "A"))
         self.assertFalse(should_generate(r, "B"))
 
@@ -70,7 +70,7 @@ class SchemaHandling(unittest.TestCase):
         return dict(self.records[number].fields)
 
     def test_inline_markup_joined_into_parent(self):
-        f = self.fields("TEST:0007")
+        f = self.fields("TEST : 0007")
         self.assertEqual(f["Object/Identification/BriefDescription"],
                          "A signed poster advertising the opening of the De La Warr Pavilion in "
                          "December with a drawing of the terrace.")
@@ -78,7 +78,7 @@ class SchemaHandling(unittest.TestCase):
         self.assertNotIn("Object/Identification/BriefDescription/emph", f)
 
     def test_confidential_and_admin_fields_withheld(self):
-        rec = self.records["TEST:0008"]
+        rec = self.records["TEST : 0008"]
         text = rec.as_prompt_text()
         for hidden in ("private seller", "purchase", "Insured value", "B4"):
             self.assertNotIn(hidden, text)
@@ -86,11 +86,11 @@ class SchemaHandling(unittest.TestCase):
         self.assertTrue(any("withheld" in n for n in score_record(rec).notes))
 
     def test_nested_object_not_a_record_or_parent_field(self):
-        self.assertNotIn("TEST:0009.1", self.records)
-        self.assertNotIn("studio photographer", self.records["TEST:0009"].as_prompt_text())
+        self.assertNotIn("TEST : 0009.1", self.records)
+        self.assertNotIn("studio photographer", self.records["TEST : 0009"].as_prompt_text())
 
     def test_whole_record_confidential(self):
-        rec = self.records["TEST:0010"]
+        rec = self.records["TEST : 0010"]
         self.assertEqual((rec.fields, rec.withheld), ([], ["Object (confidentiality=restricted)"]))
 
     def test_latin1_and_namespaces(self):
